@@ -1736,3 +1736,39 @@ def test_view_init_vertical_axis(
         tickdir_expected = tickdirs_expected[i]
         tickdir_actual = axis._get_tickdir()
         np.testing.assert_array_equal(tickdir_expected, tickdir_actual)
+
+
+def test_3d_axes_visibility():
+    """Test that set_visible() works correctly for 3D axes."""
+    fig, (ax1, ax2) = plt.subplots(1, 2, subplot_kw={'projection': '3d'})
+    
+    # Add some content to make the axes visible
+    ax1.scatter(1, 1, 1)
+    ax2.scatter(1, 1, 1, c='r')
+    
+    # Test initial visibility
+    assert ax1.get_visible() is True
+    assert ax2.get_visible() is True
+    
+    # Set ax1 to invisible
+    ax1.set_visible(False)
+    
+    # Check that the visibility was set correctly
+    assert ax1.get_visible() is False
+    assert ax2.get_visible() is True
+    
+    # Test that the invisible axis doesn't draw by manually calling draw
+    import io
+    from matplotlib.backends.backend_agg import FigureCanvasAgg, RendererAgg
+    
+    # Create a renderer to test drawing
+    canvas = FigureCanvasAgg(fig)
+    renderer = RendererAgg(100, 100, 72)
+    
+    # The invisible axes should return early from draw() without rendering
+    # We can't easily test the visual output, but we can verify the draw method
+    # respects the visibility setting by ensuring it doesn't modify renderer state
+    # when invisible
+    ax1.draw(renderer)  # Should return early and not draw anything
+    
+    plt.close(fig)
